@@ -32,7 +32,7 @@ If any of these fail, comment on the PR saying which one and stop. Do not review
 ## Giving the review
 - Leave inline comments on specific lines. Mark each as **blocking** or **nit**.
 - Blocking issues → **Request changes**, transition Jira back to **In Progress**, tag the developer.
-- Only nits or nothing → **Approve**.
+- Only nits or nothing → **Approve**. If GitHub refuses because the same account opened the PR, post your approval as a PR comment instead.
 
 ## Merging
 1. Use **squash merge** unless the repo convention says otherwise. Commit title: `<JIRA-KEY>: <summary> (#<PR number>)`. The merge commit body must end with these trailers, keeping every `Agent:` and `Co-Authored-By:` line from the squashed commits (de-duplicated):

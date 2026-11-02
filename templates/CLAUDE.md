@@ -22,7 +22,14 @@ All six agents read it at the start of every session.
 ## Tech specs
 - Location: `docs/features/<EPIC-KEY>/tech-specs.md`
 - Template: `docs/features/_template/tech-specs.md`
-- Creating a Jira story or pushing a spec to `main` starts developer-1 automatically. It only codes if the spec says `Status: Approved` and passes review.
+
+## Team flow
+When you are running the it-team agents, hand off in this order without waiting to be asked:
+- After `scrum-master` creates stories, run `developer-1` to create their feature branches. Then stop, and tell the human to write the tech spec and ask `developer-1` to start.
+- After `developer-1` opens a PR, run `tester-1` and `tester-2` on it.
+- If QA passes, run `reviewer-merger`.
+- If QA fails or the reviewer requests changes, run `developer-1` to fix it, then repeat from QA. After three rounds on the same story, stop and ask the human.
+- If any agent reports it is blocked, stop and tell the human why.
 
 ## Commands
 - Install dependencies: `<e.g. npm ci>`
