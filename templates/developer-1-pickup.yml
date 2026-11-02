@@ -1,0 +1,110 @@
+# Starts developer-1 when a Jira story is created or a tech spec lands on main.
+# Copy this file to .github/workflows/developer-1-pickup.yml in your project repo.
+# Required secrets: ANTHROPIC_API_KEY, IT_TEAM_GITHUB_PAT, ATLASSIAN_API_KEY.
+name: Developer 1 pickup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/features/*/tech-specs.md'
+      - '!docs/features/_template/**'
+  # Sent by the Jira Automation rule described in the README.
+  repository_dispatch:
+    types: [jira-story-created]
+  workflow_dispatch:
+    inputs:
+      epic_key:
+        description: Epic key to re-run pickup for, e.g. PROJ-100
+        required: true
+
+# One group per story or push. GitHub keeps only one pending run per group, so a shared
+# group would drop events when several stories are created together.
+concurrency:
+  group: developer-1-pickup-${{ github.event.client_payload.story_key || inputs.epic_key || github.sha }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  pickup:
+    # Commits carrying an Agent: trailer never start a run, which prevents loops.
+    if: "${{ github.event_name != 'push' || !contains(github.event.head_commit.message, 'Agent: ') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+        with:
+          path: project
+          fetch-depth: 0
+          # A PAT, because pull requests opened with GITHUB_TOKEN do not trigger CI.
+          token: ${{ secrets.IT_TEAM_GITHUB_PAT }}
+
+      - name: Check out it-team plugin
+        uses: actions/checkout@v4
+        with:
+          repository: spiderweb2828/claude-ai-it-team
+          path: it-team
+          token: ${{ secrets.IT_TEAM_GITHUB_PAT }}
+          persist-credentials: false
+
+      - name: Work out what to pick up
+        id: pickup
+        working-directory: project
+        env:
+          BEFORE: ${{ github.event.before }}
+          INPUT_EPIC: ${{ inputs.epic_key }}
+          STORY_KEY: ${{ github.event.client_payload.story_key }}
+        run: |
+          task=""
+          if [ "$GITHUB_EVENT_NAME" = "repository_dispatch" ]; then
+            if printf '%s' "$STORY_KEY" | grep -qE '^[A-Z][A-Z0-9_]+-[0-9]+$'; then
+              task="Run automatic story pickup for this story: $STORY_KEY"
+            fi
+          else
+            if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+              changed="docs/features/$INPUT_EPIC/tech-specs.md"
+            elif git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+              changed=$(git diff --name-only --diff-filter=AM "$BEFORE" "$GITHUB_SHA")
+            else
+              changed=$(git show --name-only --diff-filter=AM --format= "$GITHUB_SHA")
+            fi
+            epics=$(printf '%s\n' "$changed" \
+              | sed -nE 's#^docs/features/([A-Z][A-Z0-9_]+-[0-9]+)/tech-specs\.md$#\1#p' \
+              | sort -u | paste -sd ' ' -)
+            if [ -n "$epics" ]; then
+              task="Run automatic tech spec pickup for these epics: $epics"
+            fi
+          fi
+          echo "task=$task" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.pickup.outputs.task != ''
+        with:
+          node-version: 22
+
+      - name: Install Claude Code
+        if: steps.pickup.outputs.task != ''
+        run: npm install -g @anthropic-ai/claude-code@2.1.314
+
+      - name: Run developer-1
+        if: steps.pickup.outputs.task != ''
+        working-directory: project
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_PAT: ${{ secrets.IT_TEAM_GITHUB_PAT }}
+          ATLASSIAN_API_KEY: ${{ secrets.ATLASSIAN_API_KEY }}
+          TASK: ${{ steps.pickup.outputs.task }}
+        run: |
+          git config user.name "it-team developer-1"
+          git config user.email "developer-1@users.noreply.github.com"
+          # Add your project's build and test commands to --allowedTools. Anything not listed is denied.
+          claude -p "$TASK" \
+            --agent it-team:developer-1 \
+            --plugin-dir ../it-team \
+            --mcp-config ../it-team/ci/mcp.json \
+            --strict-mcp-config \
+            --permission-mode dontAsk \
+            --allowedTools Read Edit Write Glob Grep mcp__github mcp__atlassian "Bash(git *)" "Bash(npm *)"

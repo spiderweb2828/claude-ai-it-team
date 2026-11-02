@@ -2,7 +2,7 @@
 
 - Epic: <EPIC-KEY>
 - Author: <name>
-- Status: Draft | Approved
+- Status: Draft | Approved (developer-1 only starts coding when Approved)
 - Last updated: <YYYY-MM-DD>
 
 ## Overview

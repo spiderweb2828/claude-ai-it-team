@@ -1,7 +1,7 @@
 # Project context for the it-team agents
 
 Copy this file to the root of your project repo as `CLAUDE.md` and fill it in.
-All five agents read it at the start of every session.
+All six agents read it at the start of every session.
 
 ## Project
 - Name: <project name>
@@ -22,6 +22,7 @@ All five agents read it at the start of every session.
 ## Tech specs
 - Location: `docs/features/<EPIC-KEY>/tech-specs.md`
 - Template: `docs/features/_template/tech-specs.md`
+- Creating a Jira story or pushing a spec to `main` starts developer-1 automatically. It only codes if the spec says `Status: Approved` and passes review.
 
 ## Commands
 - Install dependencies: `<e.g. npm ci>`
