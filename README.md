@@ -57,7 +57,7 @@ Useful searches:
 3. In your project repo, copy `templates/CLAUDE.md` to the repo root as `CLAUDE.md` and fill it in. Copy `templates/tech-specs.md` to `docs/features/_template/tech-specs.md`.
 4. From your project repo, start Claude Code with the plugin: `claude --plugin-dir ../claude-ai-it-team`
 5. Run `/mcp`, pick `atlassian`, choose **Authenticate**, and sign in to your Atlassian site.
-6. Run `/agents` to confirm the six agents are loaded.
+6. Confirm the six agents are loaded by asking Claude: `Which it-team agents are available?`
 7. Turn on branch protection for `main` and require passing CI. Only require a review if reviewer-merger uses a different GitHub account from the developers, because GitHub does not let an account approve its own PR.
 8. Create the GitHub labels once per repo: `../claude-ai-it-team/scripts/create-github-labels.sh your-org/your-repo` (needs the `gh` CLI). Jira creates labels automatically the first time an agent adds one.
 
