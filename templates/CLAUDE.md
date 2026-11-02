@@ -22,10 +22,11 @@ All six agents read it at the start of every session.
 ## Tech specs
 - Location: `docs/features/<EPIC-KEY>/tech-specs.md`
 - Template: `docs/features/_template/tech-specs.md`
+- developer-1 copies the template to this location on the first story's feature branch. Fill it in on that branch, not on `main`. It reaches `main` when that story's PR merges.
 
 ## Team flow
 When you are running the it-team agents, hand off in this order without waiting to be asked:
-- After `scrum-master` creates stories, run `developer-1` to create their feature branches. Then stop, and tell the human to write the tech spec and ask `developer-1` to start.
+- After `scrum-master` creates stories, run `developer-1` to create their feature branches and link them on the stories. Then stop, and tell the human which branch has the spec template, to fill it in there, and to ask `developer-1` to start.
 - After `developer-1` opens a PR, run `tester-1` and `tester-2` on it.
 - If QA passes, run `reviewer-merger`.
 - If QA fails or the reviewer requests changes, run `developer-1` to fix it, then repeat from QA. After three rounds on the same story, stop and ask the human.

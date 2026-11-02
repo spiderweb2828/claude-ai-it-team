@@ -5,7 +5,7 @@ A Claude Code plugin that gives you a six-agent IT team wired to GitHub and Jira
 | Agent | Role |
 |---|---|
 | `scrum-master` | Creates Jira Epics and user stories |
-| `developer-1` | Creates feature branches, builds stories once started, opens PRs |
+| `developer-1` | Creates feature branches, builds stories once started, records sub-tasks, opens PRs |
 | `developer-2` | Watches Jira for new bugs and fixes them with regression tests, opens PRs |
 | `tester-1` | Functional QA against Jira acceptance criteria, files bugs |
 | `tester-2` | Regression, edge cases and test automation, files bugs |
@@ -14,9 +14,9 @@ A Claude Code plugin that gives you a six-agent IT team wired to GitHub and Jira
 ## Flow
 
 1. **scrum-master** creates the Epic and stories in Jira.
-2. **developer-1** creates a feature branch for each story.
-3. **You** write the tech spec and ask developer-1 to start.
-4. **developer-1** reviews the spec, builds the story and opens a PR.
+2. **developer-1** creates a feature branch for each story, adds its link to the Jira story, and copies the tech spec template to the epic's first story branch.
+3. **You** fill in the tech spec on that branch and ask developer-1 to start.
+4. **developer-1** reviews the spec and builds the story. Once coding is complete, it creates Jira sub-tasks based on the spec, marks them Done, and opens a PR.
 5. **tester-1 and tester-2** test the PR.
 6. **reviewer-merger** reviews, merges and closes the ticket.
 
@@ -65,11 +65,15 @@ Useful searches:
 
 Run these inside Claude Code, from your project repo.
 
-1. Create the stories. After you confirm the draft, developer-1 creates a feature branch for each one:
+1. Create the stories. After you confirm the draft, developer-1 creates a feature branch for each one, adds its link to the Jira story, and copies the tech spec template to the first story's branch:
 
    > Use scrum-master to create an Epic and user stories for password reset by email
 
-2. Write `docs/features/<EPIC-KEY>/tech-specs.md` and push it to `main`.
+   For a story created directly in Jira, ask for its branch yourself:
+
+   > Use developer-1 to create the branch for PROJ-123
+
+2. Check out the branch with the template, fill in `docs/features/<EPIC-KEY>/tech-specs.md`, and push it to that branch. It reaches `main` when that story's PR merges.
 
 3. Start the work. Testing, review and merge follow on their own:
 
